@@ -1,13 +1,24 @@
 package com.example.jpa100_Sample1.notice.controller;
 
+import com.example.jpa100_Sample1.notice.Entity.Notice;
+import com.example.jpa100_Sample1.notice.model.NoticeInput;
 import com.example.jpa100_Sample1.notice.model.NoticeModel;
-import java.util.ArrayList;
-import java.util.List;
-import org.springframework.web.bind.annotation.GetMapping;
+import com.example.jpa100_Sample1.notice.repository.NoticeRepository;
+import java.time.LocalDateTime;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+@RequiredArgsConstructor
 @RestController
 public class NoticeController {
+
+  private final NoticeRepository noticeRepository;
+
+
 
   // 6번
   /*
@@ -73,6 +84,7 @@ public class NoticeController {
   */
 
 
+  /* 10번
   @GetMapping("/api/notice/count")
   public int noticeCount() {
     List<NoticeModel> notices = new ArrayList<>();
@@ -82,6 +94,83 @@ public class NoticeController {
 
     return notices.size();
   }
+
+   */
+
+  /*11번
+  @PostMapping("/api/notice")
+  public NoticeModel addNotice(@RequestParam String title, @RequestParam String contents){
+    NoticeModel notice = NoticeModel.builder()
+        .id(1)
+        .title(title)
+        .contents(contents)
+        .regDate(LocalDateTime.now())
+        .build();
+
+    return notice;
+  }
+
+   */
+
+ /* 12번
+ @PostMapping("/api/notice")
+  public NoticeModel addNotice(NoticeModel noticeModel) {
+
+    noticeModel.setId(2);
+    noticeModel.setRegDate(LocalDateTime.now());
+
+    return noticeModel;
+  }*/
+
+
+/*  13번
+@PostMapping("/api/notice")
+  public NoticeModel addNotice(@RequestBody NoticeModel noticeModel){
+
+    noticeModel.setId(3);
+    noticeModel.setRegDate(LocalDateTime.now());
+
+    return noticeModel;
+  }*/
+
+
+/*  14번
+  @PostMapping("/api/notice")
+  public Notice addNotice(@RequestBody NoticeInput noticeInput){
+
+    Notice notice = Notice.builder()
+        .title(noticeInput.getTitle())
+        .contents(noticeInput.getContents())
+        .regDate(LocalDateTime.now())
+        .build();
+
+    noticeRepository.save(notice);
+
+    return notice;
+  }*/
+
+
+
+
+/*  15번
+  @PostMapping("/api/notice")
+  public Notice addNotice(@RequestBody NoticeInput noticeInput){
+
+    Notice notice = Notice.builder()
+        .title(noticeInput.getTitle())
+        .contents(noticeInput.getContents())
+        .regDate(LocalDateTime.now())
+        .hits(0)
+        .likes(0)
+        .build();
+
+    Notice resultNotice = noticeRepository.save(notice);
+
+    return resultNotice;
+
+  }*/
+
+
 
 
 }

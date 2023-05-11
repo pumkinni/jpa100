@@ -1,13 +1,23 @@
 package com.example.jpa100_Sample1.notice.controller;
 
 import com.example.jpa100_Sample1.notice.Entity.Notice;
+import com.example.jpa100_Sample1.notice.exception.NoticeNoteFoundException;
 import com.example.jpa100_Sample1.notice.model.NoticeInput;
 import com.example.jpa100_Sample1.notice.model.NoticeModel;
 import com.example.jpa100_Sample1.notice.repository.NoticeRepository;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -170,6 +180,80 @@ public class NoticeController {
 
   }*/
 
+  // 16번
+  @GetMapping("/api/notice/{id}")
+  public Notice notice(@PathVariable Long id) {
+    Optional<Notice> notice = noticeRepository.findById(id);
+
+    // 가져온 데이터 검증
+    if (notice.isPresent()){
+      return notice.get();
+    }
+
+    return null;
+  }
+
+/*  17번
+  @PutMapping("/api/notice/{id}")
+  public void updateNotice(@PathVariable Long id, @RequestBody NoticeInput noticeInput) {
+    Optional<Notice> notice = noticeRepository.findById(id);
+
+    if (notice.isPresent()){
+      notice.get().setTitle(noticeInput.getTitle());
+
+      notice.get().setContents(noticeInput.getContents());
+      notice.get().setUpdateDate(LocalDateTime.now());
+      noticeRepository.save(notice.get());
+    }
+  }*/
+
+  // 에러 처리
+
+
+
+  @ExceptionHandler(NoticeNoteFoundException.class)
+  public ResponseEntity<String> handlerNoticeNotFoundException(NoticeNoteFoundException exception) {
+    return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+  }
+
+/* 18, 19 번
+  @PutMapping("/api/notice/{id}")
+  public void updateNotice(@PathVariable Long id, @RequestBody NoticeInput noticeInput){
+//    Optional<Notice> notice = noticeRepository.findById(id);
+//
+//    if (notice.isPresent()){
+//      notice.get().setTitle(noticeInput.getTitle());
+//      notice.get().setContents(noticeInput.getContents());
+//      notice.get().setUpdateDate(LocalDateTime.now());
+//      noticeRepository.save(notice.get());
+//    } else {
+//      throw new NoticeNoteFoundException("공지사항의 글이 존재하지 않습니다.");
+//    }
+
+    Notice notice = noticeRepository.findById(id)
+        .orElseThrow(() -> new NoticeNoteFoundException("공지사항의 글이 존재하지 않습니다."));
+
+    notice.setTitle(noticeInput.getTitle());
+    notice.setContents(noticeInput.getContents());
+    notice.setUpdateDate(LocalDateTime.now());
+    noticeRepository.save(notice);
+
+  }
+*/
+
+
+/* 20번
+
+  @PatchMapping("/api/notice/{id}/hits")
+  public void noticeHits(@PathVariable Long id) {
+
+    Notice notice = noticeRepository.findById(id).orElseThrow(() -> new NoticeNoteFoundException("공지사항의 글이 존재하지 않습니다."));
+
+    notice.setHits(notice.getHits() + 1);
+
+    noticeRepository.save(notice);
+  }
+*/
 
 
 

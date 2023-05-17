@@ -2,16 +2,27 @@ package com.example.jpa100_Sample1.notice.controller;
 
 import com.example.jpa100_Sample1.notice.Entity.Notice;
 import com.example.jpa100_Sample1.notice.exception.AlreadyDeletedException;
+import com.example.jpa100_Sample1.notice.exception.NoticeInputNotFoundException;
 import com.example.jpa100_Sample1.notice.exception.NoticeNotFoundException;
+import com.example.jpa100_Sample1.notice.model.NoticeInput;
+import com.example.jpa100_Sample1.notice.model.ResponseError;
 import com.example.jpa100_Sample1.notice.repository.NoticeRepository;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
@@ -316,5 +327,82 @@ public class NoticeController {
   public void deleteAll() {
     noticeRepository.deleteAll();
   }
+
+/* 26번
+  @PostMapping("/api/notice")
+  public void addNotice(@RequestBody NoticeInput noticeInput){
+
+    if (noticeInput.getTitle() == null || noticeInput.getTitle().equals("")
+        || noticeInput.getContents() == null || noticeInput.getContents().equals("")){
+      throw new NoticeInputNotFoundException("입력된 내용 중 제목과 내용을 확인해 주세요!");
+    }
+    Notice notice = Notice.builder()
+        .title(noticeInput.getTitle())
+        .contents(noticeInput.getContents())
+        .regDate(LocalDateTime.now())
+        .hits(0)
+        .likes(0)
+        .build();
+
+    noticeRepository.save(notice);
+
+  }*/
+
+
+  @ExceptionHandler(NoticeInputNotFoundException.class)
+  public ResponseEntity<String> handlerNoticeInputNotFoundException(
+      NoticeInputNotFoundException exception) {
+    return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+  }
+
+  /* 27-1 번
+  @PostMapping("/api/notice")
+  public void addNotice(@RequestBody NoticeInput noticeInput) {
+
+    if (noticeInput.getTitle() == null || noticeInput.getTitle().equals("")
+        || noticeInput.getContents() == null || noticeInput.getContents().equals("")) {
+      throw new NoticeInputNotFoundException("입력된 내용 중 제목과 내용을 확인해 주세요!");
+    }
+    Notice notice = Notice.builder()
+        .title(noticeInput.getTitle())
+        .contents(noticeInput.getContents())
+        .regDate(LocalDateTime.now())
+        .hits(0)
+        .likes(0)
+        .build();
+
+    noticeRepository.save(notice);
+
+  }*/
+
+/*
+  @PostMapping("/api/notice")
+  public ResponseEntity<Object> addNotice(@RequestBody @Valid NoticeInput noticeInput
+      , Errors errors) {
+
+    if (errors.hasErrors()) {
+
+      List<ResponseError> responseErrors = new ArrayList<>();
+
+      errors.getAllErrors().stream().forEach(e -> {
+        responseErrors.add(ResponseError.of((FieldError) e));
+      });
+
+      return new ResponseEntity<>(responseErrors, HttpStatus.BAD_REQUEST);
+
+    }
+
+    Notice notice = Notice.builder()
+        .title(noticeInput.getTitle())
+        .contents(noticeInput.getContents())
+        .regDate(LocalDateTime.now())
+        .hits(0)
+        .likes(0)
+        .build();
+
+    noticeRepository.save(notice);
+
+    return ResponseEntity.ok().build();
+  }*/
 
 }

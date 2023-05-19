@@ -2,21 +2,19 @@ package com.example.jpa100_Sample1.notice.controller;
 
 import com.example.jpa100_Sample1.notice.Entity.Notice;
 import com.example.jpa100_Sample1.notice.exception.AlreadyDeletedException;
+import com.example.jpa100_Sample1.notice.exception.DuplicateNoticeException;
 import com.example.jpa100_Sample1.notice.exception.NoticeInputNotFoundException;
 import com.example.jpa100_Sample1.notice.exception.NoticeNotFoundException;
 import com.example.jpa100_Sample1.notice.model.NoticeInput;
-import com.example.jpa100_Sample1.notice.model.ResponseError;
 import com.example.jpa100_Sample1.notice.repository.NoticeRepository;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.Errors;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -405,4 +403,86 @@ public class NoticeController {
     return ResponseEntity.ok().build();
   }*/
 
+
+/*
+  // 28번
+  @PostMapping("/api/notice")
+  public ResponseEntity<Object> addNotice(@RequestBody @Valid NoticeInput noticeInput
+      , Errors errors) {
+
+    if (errors.hasErrors()) {
+
+      List<ResponseError> responseErrors = new ArrayList<>();
+
+      errors.getAllErrors().stream().forEach(e -> {
+        responseErrors.add(ResponseError.of((FieldError) e));
+      });
+
+      return new ResponseEntity<>(responseErrors, HttpStatus.BAD_REQUEST);
+    }
+
+    Notice notice = Notice.builder()
+        .title(noticeInput.getTitle())
+        .contents(noticeInput.getContents())
+        .regDate(LocalDateTime.now())
+        .hits(0)
+        .likes(0)
+        .build();
+
+    noticeRepository.save(notice);
+
+    return ResponseEntity.ok().build();
+  }
+
+*/
+
+
+  //29번
+  @GetMapping("/api/notice/latest/{page}")
+  public Page<Notice> pageNotice(@PathVariable int page) {
+    Page<Notice> noticeList = noticeRepository.findAll(
+        PageRequest.of(0, page, Sort.by("regDate").descending()));
+
+    return noticeList;
+  }
+
+
+  @ExceptionHandler(DuplicateNoticeException.class)
+  public ResponseEntity<?> handlerDuplicationNoticeException(DuplicateNoticeException exception) {
+    return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+  }
+
+
+  @PostMapping("/api/notice")
+  public ResponseEntity<Object> addNotice(@RequestBody NoticeInput noticeInput) {
+
+//    Optional<List<Notice>> noticeList =
+//    noticeRepository.findAllByTitleAndContentsAndRegDateGreaterThanEqual(noticeInput.getTitle(), noticeInput.getContents(), LocalDateTime.now().minusMinutes(1));
+//
+//    if (noticeList.isPresent()){
+//      if (noticeList.get().size() > 0){
+//        throw new DuplicateNoticeException("1분이내에 동일한 내용의 공지사항이 등록되었습니다.");
+//      }
+//    }
+
+    int noticeCount = noticeRepository.countByTitleAndContentsAndRegDateIsGreaterThanEqual(
+        noticeInput.getTitle(),
+        noticeInput.getContents(), LocalDateTime.now().minusMinutes(1));
+
+    if (noticeCount > 0){
+      throw new DuplicateNoticeException("1분 이내에 동일한 내용의 공지사항이 등록되었습니다.");
+    }
+
+    Notice notice = Notice.builder()
+        .title(noticeInput.getTitle())
+        .contents(noticeInput.getContents())
+        .regDate(LocalDateTime.now())
+        .hits(0)
+        .likes(0)
+        .build();
+
+    noticeRepository.save(notice);
+
+    return ResponseEntity.ok().build();
+  }
 }
